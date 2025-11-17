@@ -1,23 +1,34 @@
 /*
-    Assignment : vm . c - Implement a P - machine virtual machine
-Authors : Jaden Simmons
-Language : C ( only )
-To Compile :
-    gcc - O2 - Wall - std = c11 -o vm vm . c
-To Execute ( on Eustis ) :
-    ./ vm input . txt
-where :
-    input . txt is the name of the file co nt ai ni ng PM /0 i n s t r u c t i o n s ;
-    each line has three integers ( OP L M )
-Notes :
-    - I mp le me nt s the PM /0 virtual machine described in the homework
-      i n s t r u c t i o n s .
-    - No dynamic memory all oc at io n or pointer ari th me ti c .
-    - Does not implement any VM i n s t r u c t i o n using a separate function .
-    - Runs on Eustis .
-Class : COP 3402 - Systems Software - Fall 2025
-Instructor: Dr . Jie Lin
-Due Date : Friday , September 12th , 2025
+Assignment:
+HW4 - Complete Parser and Code Generator for PL/0
+(with Procedures, Call, and Else)
+Author(s): Jaden Simmons
+Language: C (only)
+To Compile:
+Scanner:
+gcc -O2 -std=c11 -o lex lex.c
+Parser/Code Generator:
+gcc -O2 -std=c11 -o parsercodegen_complete parsercodegen_complete.c
+Virtual Machine:
+gcc -O2 -std=c11 -o vm vm.c
+To Execute (on Eustis):
+./lex <input_file.txt>
+./parsercodegen_complete
+./vm elf.txt
+where:
+<input_file.txt> is the path to the PL/0 source program
+Notes:
+- lex.c accepts ONE command-line argument (input PL/0 source file)
+- parsercodegen_complete.c accepts NO command-line arguments
+- Input filename is hard-coded in parsercodegen_complete.c
+- Implements recursive-descent parser for extended PL/0 grammar
+- Supports procedures, call statements, and if-then-else
+- Generates PM/0 assembly code (see Appendix A for ISA)
+- VM must support EVEN instruction (OPR 0 11)
+- All development and testing performed on Eustis
+Class: COP3402 - System Software - Fall 2025
+Instructor: Dr. Jie Lin
+Due Date: Friday, November 21, 2025 at 11:59 PM ET
 */
 
 #include <stdio.h>
