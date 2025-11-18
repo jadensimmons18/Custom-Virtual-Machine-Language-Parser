@@ -483,7 +483,7 @@ void STATEMENT()
         return;
     }
 }
-void PROCEDURE_DECLARATION()
+void PROCEDURE_DECLARATION(int level)
 {
     while (currentToken.type == procsym)
     {
@@ -497,7 +497,7 @@ void PROCEDURE_DECLARATION()
 
         // todo add to symbol table
 
-        // todo BLOCK(level + 1);
+        BLOCK(level + 1);
 
         if (currentToken.type != semicolonsym)
         {
@@ -584,18 +584,18 @@ void CONST_DECLARATION()
         GET_TOKEN();
     }
 }
-void BLOCK()
+void BLOCK(int level)
 {
     CONST_DECLARATION();
     int numVars = VAR_DECLARATION();
-    // todo procedure-declaration
+    PROCEDURE_DECLARATION(level);
     emit(INC, 0, 3 + numVars);
     STATEMENT();
 }
 void PROGRAM()
 {
     emit(JMP, 0, 3);
-    BLOCK();
+    BLOCK(0);
     if (currentToken.type != periodsym)
     {
         ERROR("Error: program must end with period");
