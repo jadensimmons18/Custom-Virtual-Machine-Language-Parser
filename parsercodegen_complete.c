@@ -1,4 +1,4 @@
-/*
+zx/*
 Assignment:
 HW4 - Complete Parser and Code Generator for PL/0
 (with Procedures, Call, and Else)
@@ -602,8 +602,26 @@ int BLOCK(int level)
     CONST_DECLARATION(level);
     int numVars = VAR_DECLARATION(level);
     PROCEDURE_DECLARATION(level);
+
+    int codeStart = codeIndex;
     emit(INC, 0, 3 + numVars);
     STATEMENT(level);
+
+    if (level > 0) // If we are in a procedure we must return to the caller
+    {
+        emit(OPR, 0, 0); // emit RTN
+    }
+
+    // Marks all of the symbols in the table as available/unavailable
+    for (int i = symbol_table_index - 1; i >= 0; i--) 
+    {
+        if (symbol_table[i].level == level)
+        {
+            symbol_table[i].mark = 1; // 1 = Unavailable
+        }
+    }
+
+    return codeStart;
 }
 void PROGRAM()
 {
