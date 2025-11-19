@@ -495,7 +495,7 @@ void PROCEDURE_DECLARATION(int level)
         {
             ERROR("Error: const, var, read, procedure, and call keywords must be followed by identifier");
         }
-        
+
         char procName[12];
         strcpy(procName, currentToken.value);
         if (symbol_table_check(procName) != -1)
@@ -597,7 +597,7 @@ void CONST_DECLARATION(int level)
         GET_TOKEN();
     }
 }
-void BLOCK(int level)
+int BLOCK(int level)
 {
     CONST_DECLARATION(level);
     int numVars = VAR_DECLARATION(level);
@@ -607,13 +607,20 @@ void BLOCK(int level)
 }
 void PROGRAM()
 {
-    emit(JMP, 0, 3);
-    BLOCK(0);
-    if (currentToken.type != periodsym)
+    int jmpIndex = codeIndex; // will always be 0 (start of code)
+
+    emit(JMP, 0, -1); // Emit placeholder -1 for later backpatching
+    
+    int mainBlockLocation = BLOCK(0); // Block will generate the code for the whole program and then return the jmpIndex for the main block
+    
+    code[jmpIndex].m = mainBlockLocation;
+
+    if (currentToken.type != periodsym) // Program must end with period
     {
         ERROR("Error: program must end with period");
     }
-    emit(SYS, 0, 3);
+
+    emit(SYS, 0, 3); // emit HALT
 }
 int main()
 {
