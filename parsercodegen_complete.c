@@ -217,9 +217,9 @@ void add_symbol_table(int kind, char *name, int val, int level, int addr, int ma
     symbol_table_index++;
 }
 // Prototypes
-void EXPRESSION();
+void EXPRESSION(int level);
 // Primary Functions:
-void FACTOR()
+void FACTOR(int level)
 {
     if (currentToken.type == identsym)
     {
@@ -247,7 +247,7 @@ void FACTOR()
     else if (currentToken.type == lparentsym)
     {
         GET_TOKEN();
-        EXPRESSION();
+        EXPRESSION(level);
         if (currentToken.type != rparentsym)
         {
             ERROR("Error: right parenthesis must follow left parenthesis");
@@ -259,31 +259,31 @@ void FACTOR()
         ERROR("Error: arithmetic equations must contain operands, parentheses, numbers, or symbols");
     }
 }
-void TERM()
+void TERM(int level)
 {
-    FACTOR();
+    FACTOR(level);
     while (currentToken.type == multsym || currentToken.type == slashsym)
     {
         if (currentToken.type == multsym)
         {
             GET_TOKEN();
-            FACTOR();
+            FACTOR(level);
             emit(OPR, 0, 3);
         }
         else if (currentToken.type == slashsym)
         {
             GET_TOKEN();
-            FACTOR();
+            FACTOR(level);
             emit(OPR, 0, 4);
         }
     }
 }
-void EXPRESSION()
+void EXPRESSION(int level)
 {
     if (currentToken.type == minussym)
     {
         GET_TOKEN();
-        TERM();
+        TERM(level);
         emit(LIT, 0, 0);
         emit(OPR, 0, 2);
 
@@ -292,13 +292,13 @@ void EXPRESSION()
             if (currentToken.type == plussym)
             {
                 GET_TOKEN();
-                TERM();
+                TERM(level);
                 emit(OPR, 0, 1);
             }
             else
             {
                 GET_TOKEN();
-                TERM();
+                TERM(level);
                 emit(OPR, 0, 2);
             }
         }
@@ -309,69 +309,69 @@ void EXPRESSION()
         {
             GET_TOKEN();
         }
-        TERM();
+        TERM(level);
         while (currentToken.type == plussym || currentToken.type == minussym)
         {
             if (currentToken.type == plussym)
             {
                 GET_TOKEN();
-                TERM();
+                TERM(level);
                 emit(OPR, 0, 1);
             }
             else
             {
                 GET_TOKEN();
-                TERM();
+                TERM(level);
                 emit(OPR, 0, 2);
             }
         }
     }
 }
-void CONDITION()
+void CONDITION(int level)
 {
     if (currentToken.type == evensym)
     {
         GET_TOKEN();
-        EXPRESSION();
+        EXPRESSION(level);
         emit(OPR, 0, 11);
     }
     else
     {
-        EXPRESSION();
+        EXPRESSION(level);
         if (currentToken.type == eqsym)
         {
             GET_TOKEN();
-            EXPRESSION();
+            EXPRESSION(level);
             emit(OPR, 0, 5);
         }
         else if (currentToken.type == neqsym)
         {
             GET_TOKEN();
-            EXPRESSION();
+            EXPRESSION(level);
             emit(OPR, 0, 6);
         }
         else if (currentToken.type == lessym)
         {
             GET_TOKEN();
-            EXPRESSION();
+            EXPRESSION(level);
             emit(OPR, 0, 7);
         }
         else if (currentToken.type == leqsym)
         {
             GET_TOKEN();
-            EXPRESSION();
+            EXPRESSION(level);
             emit(OPR, 0, 8);
         }
         else if (currentToken.type == gtrsym)
         {
             GET_TOKEN();
-            EXPRESSION();
+            EXPRESSION(level);
             emit(OPR, 0, 9);
         }
         else if (currentToken.type == geqsym)
         {
             GET_TOKEN();
-            EXPRESSION();
+            EXPRESSION(level);
             emit(OPR, 0, 10);
         }
         else
@@ -380,7 +380,7 @@ void CONDITION()
         }
     }
 }
-void STATEMENT()
+void STATEMENT(int level)
 {
     if (currentToken.type == identsym) // If the token is an identifier
     {
@@ -401,7 +401,7 @@ void STATEMENT()
             ERROR("Error: assignment statements must use :=");
         }
         GET_TOKEN();
-        EXPRESSION();
+        EXPRESSION(level);
         emit(STO, 0, symbol_table[symIdx].addr);
         return;
     }
@@ -410,7 +410,7 @@ void STATEMENT()
         do
         {
             GET_TOKEN();
-            STATEMENT();
+            STATEMENT(level);
         } while (currentToken.type == semicolonsym);
         if (currentToken.type != endsym)
         {
@@ -422,7 +422,7 @@ void STATEMENT()
     if (currentToken.type == ifsym)
     {
         GET_TOKEN();
-        CONDITION();
+        CONDITION(level);
         int jpcIdx = codeIndex;
         emit(JPC, 0, 0);
         if (currentToken.type != thensym)
@@ -430,7 +430,7 @@ void STATEMENT()
             ERROR("Error: if must be followed by then");
         }
         GET_TOKEN();
-        STATEMENT();
+        STATEMENT(level);
         if (currentToken.type != fisym)
         {
             ERROR("Error: arithmetic equations must contain operands, parentheses, numbers, or symbols");
@@ -443,7 +443,7 @@ void STATEMENT()
     {
         GET_TOKEN();
         int loopIdx = codeIndex;
-        CONDITION();
+        CONDITION(level);
         if (currentToken.type != dosym)
         {
             ERROR("Error: while must be followed by do");
@@ -451,7 +451,7 @@ void STATEMENT()
         GET_TOKEN();
         int jpcIdx = codeIndex;
         emit(JPC, 0, 0);
-        STATEMENT();
+        STATEMENT(level);
         emit(JMP, 0, loopIdx);
         code[jpcIdx].m = codeIndex;
         return;
@@ -481,7 +481,7 @@ void STATEMENT()
     if (currentToken.type == writesym)
     {
         GET_TOKEN();
-        EXPRESSION();
+        EXPRESSION(level);
         emit(SYS, 0, 1);
         return;
     }
@@ -519,7 +519,7 @@ void PROCEDURE_DECLARATION(int level)
         GET_TOKEN();
     }
 }
-int VAR_DECLARATION() // Returns number of variables
+int VAR_DECLARATION(int level) // Returns number of variables
 {
     int numVars = 0;
     // If the token is a var
@@ -550,7 +550,7 @@ int VAR_DECLARATION() // Returns number of variables
     }
     return numVars;
 }
-void CONST_DECLARATION()
+void CONST_DECLARATION(int level)
 {
     char constName[12];
     if (currentToken.type == constsym)
@@ -599,11 +599,11 @@ void CONST_DECLARATION()
 }
 void BLOCK(int level)
 {
-    CONST_DECLARATION();
-    int numVars = VAR_DECLARATION();
+    CONST_DECLARATION(level);
+    int numVars = VAR_DECLARATION(level);
     PROCEDURE_DECLARATION(level);
     emit(INC, 0, 3 + numVars);
-    STATEMENT();
+    STATEMENT(level);
 }
 void PROGRAM()
 {
