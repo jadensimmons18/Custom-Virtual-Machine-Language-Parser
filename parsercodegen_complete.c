@@ -441,7 +441,7 @@ void STATEMENT(int level)
         code[jpcIdx].m = codeIndex;
 
         STATEMENT(level);
-        
+
         if (currentToken.type != fisym)
         {
             ERROR("Error: else must be followed by fi");
@@ -542,7 +542,7 @@ void PROCEDURE_DECLARATION(int level)
             ERROR("Error: procedure declaration must be followed by a semicolon");
         }
         GET_TOKEN();
-        add_symbol_table(3, procName, 0, level, codeIndex, 0);
+        add_symbol_table(3, procName, 0, level, codeIndex * 3, 0); // procedure kind = 3
         BLOCK(level + 1);
 
         if (currentToken.type != semicolonsym)
@@ -636,7 +636,13 @@ int BLOCK(int level)
     int numVars = VAR_DECLARATION(level);
     PROCEDURE_DECLARATION(level);
 
+    printf("CODE INDEX = %d!!!", codeIndex);
     int codeStart = codeIndex;
+    // todo idk if this is right???
+    if (level > 0)
+    {
+        emit(JMP, 0, (codeIndex * 3) + 3); // jmp over the current instruction
+    }
     emit(INC, 0, 3 + numVars);
     STATEMENT(level);
 
@@ -670,7 +676,6 @@ void PROGRAM()
     {
         ERROR("Error: program must end with period");
     }
-
     emit(SYS, 0, 3); // emit HALT
 }
 int main()
@@ -678,14 +683,7 @@ int main()
     inFile = fopen("lex_output.txt", "r");
     outFile = fopen("elf.txt", "w");
     GET_TOKEN(); // Gets the first token
-    PROGRAM(); // Start the parser
-
-
-
-
-
-
-
+    PROGRAM();   // Start the parser
 
     //* Handles printing
     printf("Assembly Code:\n\n");
