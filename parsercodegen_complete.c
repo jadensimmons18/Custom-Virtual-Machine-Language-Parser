@@ -635,8 +635,7 @@ int BLOCK(int level)
     CONST_DECLARATION(level);
     int numVars = VAR_DECLARATION(level);
     PROCEDURE_DECLARATION(level);
-
-    printf("CODE INDEX = %d!!!", codeIndex);
+    
     int codeStart = codeIndex;
     // todo idk if this is right???
     if (level > 0)
