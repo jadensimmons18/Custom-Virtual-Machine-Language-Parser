@@ -438,7 +438,7 @@ void STATEMENT(int level)
         int jmpIndex = codeIndex;
         emit(JMP, 0, 0);
 
-        code[jpcIdx].m = codeIndex;
+        code[jpcIdx].m = codeIndex * 3;
 
         STATEMENT(level);
 
@@ -447,7 +447,7 @@ void STATEMENT(int level)
             ERROR("Error: else must be followed by fi");
         }
         GET_TOKEN();
-        code[jmpIndex].m = codeIndex;
+        code[jmpIndex].m = codeIndex * 3;
         return;
     }
     if (currentToken.type == whilesym)
@@ -641,11 +641,6 @@ int BLOCK(int level)
     PROCEDURE_DECLARATION(level);
     
     int codeStart = codeIndex;
-    // todo idk if this is right???
-    // if (level > 0)
-    // {
-    //     emit(JMP, 0, (codeIndex * 3) + 3); // jmp to the start of the procedures logic
-    // }
     emit(INC, 0, 3 + numVars);
     STATEMENT(level);
 
